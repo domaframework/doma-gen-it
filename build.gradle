@@ -6,7 +6,6 @@ compileJava.dependsOn processResources
 
 compileJava {
     options.encoding = 'UTF-8'
-    options.compilerArgs = ['-Adoma.domain.converters=org.seasar.doma.it.domain.DomainConverterProvider']
 }
  
 compileTestJava {
