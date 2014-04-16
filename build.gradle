@@ -1,4 +1,5 @@
 apply plugin: 'java'
+apply plugin: 'groovy'
 
 version = '2.0-beta-4-SNAPSHOT'
 processResources.destinationDir = compileJava.destinationDir
@@ -18,8 +19,32 @@ jar {
     }
 }
 
+task gen << {
+    ant.taskdef(
+        resource: 'domagentask.properties', 
+        classpath:configurations.antRuntime.plus(sourceSets.main.output).asPath) {
+    }
+    ant.gen(
+        dialectName: 'hsqldb', 
+        driverClassName: 'org.hsqldb.jdbc.JDBCDriver', 
+        url: 'jdbc:hsqldb:mem:doma_gen_it', 
+        user: '',
+        password: '',
+        globalFactoryClassName: 'org.seasar.doma.extension.gen.it.GenItGlobalFactory',
+        ) {
+            entityConfig(
+                destDir: 'src/gen/java')
+    }
+}
+
+gen.dependsOn compileJava
+
 task wrapper(type: Wrapper) {
     gradleVersion = '1.11'
+}
+
+configurations {
+    antRuntime
 }
 
 repositories {
@@ -30,8 +55,8 @@ repositories {
  
 dependencies {
     compile "org.seasar.doma:doma-gen:${version}"
-    testCompile 'org.hsqldb:hsqldb:2.3.2'
-    testCompile 'junit:junit:4.11'
+    antRuntime "org.seasar.doma:doma-gen:${version}"
+    antRuntime 'org.hsqldb:hsqldb:2.3.2'
 }
 
 apply from:'eclipse.gradle'
