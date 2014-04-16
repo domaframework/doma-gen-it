@@ -1,7 +1,0 @@
-select
-  ID,
-  EMP_NAME
-from
-  HOGE
-where
-  ID = /* id */'a'

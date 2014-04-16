@@ -1,0 +1,38 @@
+apply plugin: 'java'
+
+version = '2.0-beta-4-SNAPSHOT'
+processResources.destinationDir = compileJava.destinationDir
+compileJava.dependsOn processResources
+
+compileJava {
+    options.encoding = 'UTF-8'
+    options.compilerArgs = ['-Adoma.domain.converters=org.seasar.doma.it.domain.DomainConverterProvider']
+}
+ 
+compileTestJava {
+    options.encoding = 'UTF-8'
+}
+ 
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'Doma-Gen-IT', 'Implementation-Version': version
+    }
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '1.11'
+}
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+    maven {url 'https://oss.sonatype.org/content/repositories/snapshots/'}
+}
+ 
+dependencies {
+    compile "org.seasar.doma:doma-gen:${version}"
+    testCompile 'org.hsqldb:hsqldb:2.3.2'
+    testCompile 'junit:junit:4.11'
+}
+
+apply from:'eclipse.gradle'
