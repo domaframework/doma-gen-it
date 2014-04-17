@@ -24,16 +24,19 @@ task gen << {
         resource: 'domagentask.properties', 
         classpath:configurations.antRuntime.plus(sourceSets.main.output).asPath) {
     }
+    ext {
+        javaDestDir = 'src/gen/java'
+        resourcesDestDir = 'src/gen/resources'
+    }
     ant.gen(
-        dialectName: 'hsqldb', 
-        driverClassName: 'org.hsqldb.jdbc.JDBCDriver', 
         url: 'jdbc:hsqldb:mem:doma_gen_it', 
         user: '',
         password: '',
         globalFactoryClassName: 'org.seasar.doma.extension.gen.it.GenItGlobalFactory',
         ) {
-            entityConfig(
-                destDir: 'src/gen/java')
+            entityConfig(destDir: javaDestDir)
+            daoConfig(destDir: javaDestDir)
+            sqlConfig(destDir: resourcesDestDir)
     }
 }
 
