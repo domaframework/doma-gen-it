@@ -7,6 +7,6 @@
 /build/
 /target/
 /.metadata
-src/gen/java
 .factorypath
-src/gen
+src/genmain
+src/gentest
