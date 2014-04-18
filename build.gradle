@@ -37,7 +37,8 @@ task gen(dependsOn: compileJava) << {
         url: url, 
         user: user,
         password: password,
-        globalFactoryClassName: globalFactoryClassName) {
+        globalFactoryClassName: globalFactoryClassName,
+        templatePrimaryDir: "${resourcesDestDir}/template") {
 
         entityConfig(destDir: javaDestDir)
         daoConfig(destDir: javaDestDir)
