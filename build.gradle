@@ -19,7 +19,7 @@ jar {
     }
 }
 
-task gen << {
+task gen(dependsOn: compileJava) << {
     ant.taskdef(
         resource: 'domagentask.properties', 
         classpath:configurations.antRuntime.plus(sourceSets.main.output).asPath) {
@@ -39,8 +39,6 @@ task gen << {
             sqlConfig(destDir: resourcesDestDir)
     }
 }
-
-gen.dependsOn compileJava
 
 task wrapper(type: Wrapper) {
     gradleVersion = '1.11'
