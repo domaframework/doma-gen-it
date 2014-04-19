@@ -2,41 +2,66 @@ apply plugin: 'java'
 apply plugin: 'groovy'
 
 version = '2.0-beta-4-SNAPSHOT'
+
+ext {
+    jdbcUrl = 'jdbc:hsqldb:mem:doma_gen_it'
+    jdbcUser = ''
+    jdbcPassword = ''
+    javaDestDir = 'src/genmain/java'
+    resourcesDestDir = 'src/genmain/resources'
+    testDestDir = 'src/gentest/java'
+    globalFactoryClassName = 'org.seasar.doma.extension.gen.it.GenItGlobalFactory'
+}
+
+sourceSets {
+    genmain
+    gentest
+}
+
 processResources.destinationDir = compileJava.destinationDir
 compileJava.dependsOn processResources
+
+processGenmainResources.destinationDir = compileGenmainJava.destinationDir
+compileGenmainJava.dependsOn processGenmainResources
 
 compileJava {
     options.encoding = 'UTF-8'
 }
- 
+
 compileTestJava {
     options.encoding = 'UTF-8'
 }
- 
+
 jar {
     manifest {
         attributes 'Implementation-Title': 'Doma-Gen-IT', 'Implementation-Version': version
     }
 }
 
-task gen(dependsOn: compileJava) << {
+task deleteGeneratedFiles(type: Delete) {
+    delete javaDestDir
+    delete resourcesDestDir
+    delete testDestDir
+}
+
+task gen(dependsOn: [classes, deleteGeneratedFiles]) << {
     ant.taskdef(
         resource: 'domagentask.properties', 
-        classpath:configurations.antRuntime.plus(sourceSets.main.output).asPath) {
+        classpath: (configurations.antRuntime + sourceSets.main.output).asPath) {
     }
-    ext {
-        url = 'jdbc:hsqldb:mem:doma_gen_it'
-        user = ''
-        password = ''
-        javaDestDir = 'src/genmain/java'
-        resourcesDestDir = 'src/genmain/resources'
-        testDestDir = 'src/gentest/java'
-        globalFactoryClassName = 'org.seasar.doma.extension.gen.it.GenItGlobalFactory'
-    }
+    ant.echo(file: "${resourcesDestDir}/template/lib.ftl", message: """\
+        |<#assign copyright>
+        |/*
+        | * Copyright 2008-2009 ...
+        | * All rights reserved.
+        | */
+        |</#assign>
+        |
+        |<#assign author="Nakamura">""".stripMargin())
     ant.gen(
-        url: url, 
-        user: user,
-        password: password,
+        url: jdbcUrl, 
+        user: jdbcUser,
+        password: jdbcPassword,
         globalFactoryClassName: globalFactoryClassName,
         templatePrimaryDir: "${resourcesDestDir}/template") {
 
@@ -44,18 +69,35 @@ task gen(dependsOn: compileJava) << {
         daoConfig(destDir: javaDestDir)
         sqlConfig(destDir: resourcesDestDir)
     }
-    ant.genTest(
-        url: url, 
-        user: user,
-        password: password,
-        globalFactoryClassName: globalFactoryClassName) {
+}
 
-        sqlTestConfig(destDir: testDestDir) {
+compileGenmainJava.dependsOn gen
+
+task genTestSuite(dependsOn: compileGenmainJava) << {
+    ant.taskdef(
+        resource: 'domagentask.properties', 
+        classpath: (configurations.antRuntime + sourceSets.main.output).asPath) {
+    }
+    ant.gen(
+        url: jdbcUrl, 
+        user: jdbcUser,
+        password: jdbcPassword,
+        globalFactoryClassName: globalFactoryClassName,
+        templatePrimaryDir: "${resourcesDestDir}/template") {
+
+        sqlTestCaseConfig(destDir: testDestDir) {
             fileset(dir: resourcesDestDir) {
                 include(name: 'META-INF/**/*.sql')
             }
         }
     }
+}
+
+compileGentestJava.dependsOn genTestSuite
+
+task verify(dependsOn: compileGentestJava) << {
+    assert file("${javaDestDir}/example/dao/EmployeeDao.java").exists()
+    assert file("${testDestDir}/example/dao/EmployeeDaoTest.java").exists()
 }
 
 task wrapper(type: Wrapper) {
@@ -74,8 +116,15 @@ repositories {
  
 dependencies {
     compile "org.seasar.doma:doma-gen:${version}"
+
     antRuntime "org.seasar.doma:doma-gen:${version}"
     antRuntime 'org.hsqldb:hsqldb:2.3.2'
+
+    genmainCompile "org.seasar.doma:doma:${version}"
+
+    gentestCompile "org.seasar.doma:doma:${version}"
+    gentestCompile 'org.hsqldb:hsqldb:2.3.2'
+    gentestCompile 'junit:junit:4.11'
 }
 
 apply from:'eclipse.gradle'
