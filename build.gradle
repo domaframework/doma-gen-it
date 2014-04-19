@@ -113,11 +113,13 @@ task genTestSuite(dependsOn: compileGenmainJava) << {
 
 compileGentestJava.dependsOn genTestSuite
 
-task verify(dependsOn: compileGentestJava) << {
+check << {
     assert file("${javaDestDir}/example/entity/MyEmployee.java").exists()
     assert file("${javaDestDir}/example/entity/Employee.java").exists()
     assert file("${testDestDir}/example/dao/EmployeeDaoTest.java").exists()
 }
+
+check.dependsOn compileGentestJava
 
 task wrapper(type: Wrapper) {
     gradleVersion = '1.11'
