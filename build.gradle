@@ -71,7 +71,25 @@ task gen(dependsOn: [classes, deleteGeneratedFiles]) << {
     }
 }
 
-compileGenmainJava.dependsOn gen
+task genEntity(dependsOn: [classes, deleteGeneratedFiles]) << {
+    ant.taskdef(
+        resource: 'domagentask.properties', 
+        classpath: (configurations.antRuntime + sourceSets.main.output).asPath) {
+    }
+    ant.gen(
+        url: jdbcUrl, 
+        user: jdbcUser,
+        password: jdbcPassword,
+        globalFactoryClassName: globalFactoryClassName) {
+
+        entityConfig(
+            sql: 'select * from Employee',
+            destDir: javaDestDir,
+            entityName: 'MyEmployee')
+    }
+}
+
+compileGenmainJava.dependsOn(gen, genEntity)
 
 task genTestSuite(dependsOn: compileGenmainJava) << {
     ant.taskdef(
@@ -96,7 +114,8 @@ task genTestSuite(dependsOn: compileGenmainJava) << {
 compileGentestJava.dependsOn genTestSuite
 
 task verify(dependsOn: compileGentestJava) << {
-    assert file("${javaDestDir}/example/dao/EmployeeDao.java").exists()
+    assert file("${javaDestDir}/example/entity/MyEmployee.java").exists()
+    assert file("${javaDestDir}/example/entity/Employee.java").exists()
     assert file("${testDestDir}/example/dao/EmployeeDaoTest.java").exists()
 }
 
