@@ -1,7 +1,7 @@
 apply plugin: 'java'
 apply plugin: 'groovy'
 
-version = '2.3.2-SNAPSHOT'
+version = '2.4.0'
 
 ext {
     jdbcUrl = 'jdbc:hsqldb:mem:doma_gen_it'
