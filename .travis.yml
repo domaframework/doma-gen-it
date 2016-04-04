@@ -8,3 +8,6 @@ branches:
 
 jdk:
   - oraclejdk8
+
+before_script:
+  - mysql -uroot -e "create database doma_gen_it"

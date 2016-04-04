@@ -4,6 +4,7 @@ apply plugin: 'groovy'
 version = '2.7.1-SNAPSHOT'
 
 ext {
+    // HSQLDB
     jdbcUrl = 'jdbc:hsqldb:mem:doma_gen_it'
     jdbcUser = ''
     jdbcPassword = ''
@@ -11,18 +12,43 @@ ext {
     resourcesDestDir = 'src/genmain/resources'
     testDestDir = 'src/gentest/java'
     globalFactoryClassName = 'org.seasar.doma.extension.gen.it.GenItGlobalFactory'
+
+    // MySQL
+    jdbcUrlMySql = 'jdbc:mysql://localhost:3306/doma_gen_it'
+    jdbcUserMySql = 'root'
+    jdbcPasswordMySql = ''
+    javaDestDirMysql = 'src/genmainmysql/java'
+    resourcesDestDirMysql = 'src/genmainmysql/resources'
+    testDestDirMysql = 'src/gentestmysql/java'
+    globalFactoryMySqlClassName = 'org.seasar.doma.extension.gen.it.GenItGlobalMySqlFactory'
 }
 
 sourceSets {
+    // HSQLDB
     genmain
     gentest
+
+    // MySQL
+    genmainmysql
+    gentestmysql
+
+    // add classpath for test
+    test {
+        compileClasspath += sourceSets.genmainmysql.output
+        runtimeClasspath += sourceSets.genmainmysql.output
+    }
 }
 
 processResources.destinationDir = compileJava.destinationDir
 compileJava.dependsOn processResources
 
+// HSQLDB
 processGenmainResources.destinationDir = compileGenmainJava.destinationDir
 compileGenmainJava.dependsOn processGenmainResources
+
+// MySQL
+processGenmainmysqlResources.destinationDir = compileGenmainmysqlJava.destinationDir
+compileGenmainmysqlJava.dependsOn processGenmainmysqlResources
 
 compileJava {
     options.encoding = 'UTF-8'
@@ -39,9 +65,15 @@ jar {
 }
 
 task deleteGeneratedFiles(type: Delete) {
+    // HSQLDB
     delete javaDestDir
     delete resourcesDestDir
     delete testDestDir
+
+    // MySQL
+    delete javaDestDirMysql
+    delete resourcesDestDirMysql
+    delete testDestDirMysql
 }
 
 task gen(dependsOn: [classes, deleteGeneratedFiles]) << {
@@ -71,6 +103,7 @@ task gen(dependsOn: [classes, deleteGeneratedFiles]) << {
     }
 }
 
+// HSQLDB
 task genEntity(dependsOn: [classes, deleteGeneratedFiles]) << {
     ant.taskdef(
         resource: 'domagentask.properties', 
@@ -89,9 +122,31 @@ task genEntity(dependsOn: [classes, deleteGeneratedFiles]) << {
     }
 }
 
+// MySQL
+task genEntityMySql(dependsOn: [classes, deleteGeneratedFiles]) << {
+    ant.taskdef(
+        resource: 'domagentask.properties',
+        classpath: (configurations.antRuntime + sourceSets.main.output).asPath) {
+    }
+    ant.gen(
+        url: jdbcUrlMySql,
+        user: jdbcUserMySql,
+        password: jdbcPasswordMySql,
+        globalFactoryClassName: globalFactoryMySqlClassName) {
+
+        entityConfig(destDir: javaDestDirMysql)
+        daoConfig(destDir: javaDestDirMysql)
+        sqlConfig(destDir: resourcesDestDirMysql)
+    }
+}
+
+// HSQLDB
 compileGenmainJava.dependsOn(gen, genEntity)
 
-task genTestSuite(dependsOn: compileGenmainJava) << {
+// MySQL
+compileGenmainmysqlJava.dependsOn(genEntityMySql)
+
+task genTestSuite(dependsOn: [compileGenmainJava, compileGenmainmysqlJava]) << {
     ant.taskdef(
         resource: 'domagentask.properties', 
         classpath: (configurations.antRuntime + sourceSets.main.output).asPath) {
@@ -111,15 +166,24 @@ task genTestSuite(dependsOn: compileGenmainJava) << {
     }
 }
 
+// HSQLDB
 compileGentestJava.dependsOn genTestSuite
 
+// MySQL
+compileGentestmysqlJava.dependsOn compileGentestJava
+
 check << {
+    // HSQLDB
     assert file("${javaDestDir}/example/entity/MyEmployee.java").exists()
     assert file("${javaDestDir}/example/entity/Employee.java").exists()
     assert file("${testDestDir}/example/dao/EmployeeDaoTest.java").exists()
+
+    // MySQL
+    assert file("${javaDestDirMysql}/example/entity/Table0.java").exists()
+    assert file("${javaDestDirMysql}/example/dao/Table0Dao.java").exists()
 }
 
-check.dependsOn compileGentestJava
+check.dependsOn(compileGentestJava, compileGentestmysqlJava)
 
 task wrapper(type: Wrapper) {
     gradleVersion = '2.0'
@@ -137,15 +201,24 @@ repositories {
  
 dependencies {
     compile "org.seasar.doma:doma-gen:${version}"
+    testCompile 'junit:junit:4.11'
+    testCompile 'mysql:mysql-connector-java:5.1.38'
 
     antRuntime "org.seasar.doma:doma-gen:${version}"
     antRuntime 'org.hsqldb:hsqldb:2.3.2'
+    antRuntime 'mysql:mysql-connector-java:5.1.38'
 
+    // HSQLDB
     genmainCompile "org.seasar.doma:doma:${version}"
-
     gentestCompile "org.seasar.doma:doma:${version}"
     gentestCompile 'org.hsqldb:hsqldb:2.3.2'
     gentestCompile 'junit:junit:4.11'
+
+    // MySQL
+    genmainmysqlCompile "org.seasar.doma:doma:${version}"
+    gentestmysqlCompile "org.seasar.doma:doma:${version}"
+    gentestmysqlCompile 'mysql:mysql-connector-java:5.1.38'
+    gentestmysqlCompile 'junit:junit:4.11'
 }
 
 apply from:'eclipse.gradle'
