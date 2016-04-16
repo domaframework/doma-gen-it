@@ -11,3 +11,13 @@ jdk:
 
 before_script:
   - mysql -uroot -e "create database doma_gen_it"
+
+env:
+  - DB=hsqldb JDBC_URL=jdbc:hsqldb:mem:doma_gen_it JDBC_USER=sa JDBC_PASSWORD=
+  - DB=mysql JDBC_URL=jdbc:mysql://127.0.0.1/doma_gen_it JDBC_USER=travis JDBC_PASSWORD=
+
+before_script:
+  - sh -c "if [ '$DB' = 'mysql' ]; then mysql -e 'create database IF NOT EXISTS doma_gen_it;'; fi"
+
+script:
+  - ./gradlew check -info -PjdbcUrl=jdbc:mysql://localhost:3306/doma_gen_it -PjdbcUser=root -PjdbcPassword= -PglobalFactoryClassName=org.seasar.doma.extension.gen.it.GenItGlobalMySqlFactory
