@@ -2,6 +2,7 @@ apply plugin: 'java'
 apply plugin: 'groovy'
 
 version = '2.15.1-SNAPSHOT'
+ext.dependentVersion = '2.15.0'
 
 sourceSets {
     genmain
@@ -166,17 +167,17 @@ repositories {
 }
  
 dependencies {
-    compile "org.seasar.doma:doma-gen:${version}"
+    compile "org.seasar.doma:doma-gen:${dependentVersion}"
     testCompile 'junit:junit:4.11'
     testCompile 'org.hsqldb:hsqldb:2.3.2'
     testCompile 'mysql:mysql-connector-java:5.1.38'
 
-    antRuntime "org.seasar.doma:doma-gen:${version}"
+    antRuntime "org.seasar.doma:doma-gen:${dependentVersion}"
     antRuntime 'org.hsqldb:hsqldb:2.3.2'
     antRuntime 'mysql:mysql-connector-java:5.1.38'
 
-    genmainCompile "org.seasar.doma:doma:${version}"
-    gentestCompile "org.seasar.doma:doma:${version}"
+    genmainCompile "org.seasar.doma:doma:${dependentVersion}"
+    gentestCompile "org.seasar.doma:doma:${dependentVersion}"
     gentestCompile 'junit:junit:4.11'
 }
 
