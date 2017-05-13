@@ -1,8 +1,8 @@
 apply plugin: 'java'
 apply plugin: 'groovy'
 
-version = '2.16.1-SNAPSHOT'
-ext.dependentVersion = '2.16.0'
+version = '2.16.1'
+ext.dependentVersion = '2.16.1'
 
 sourceSets {
     genmain
