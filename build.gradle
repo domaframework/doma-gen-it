@@ -2,7 +2,7 @@ apply plugin: 'java'
 apply plugin: 'groovy'
 
 version = '2.19.3-SNAPSHOT'
-ext.dependentVersion = '2.19.2'
+ext.dependentVersion = '2.19.3-SNAPSHOT'
 
 sourceSets {
     genmain
@@ -152,8 +152,8 @@ check << {
 
 check.dependsOn(compileGentestJava)
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '2.0'
+wrapper {
+    gradleVersion = '4.11-20180809235910+0000'
 }
 
 configurations {
