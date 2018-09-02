@@ -25,10 +25,22 @@ compileGenmainJava.dependsOn processGenmainResources
 
 compileJava {
     options.encoding = 'UTF-8'
+    options.compilerArgs += ["-proc:none"]
 }
 
 compileTestJava {
     options.encoding = 'UTF-8'
+    options.compilerArgs += ["-proc:none"]
+}
+
+compileGenmainJava {
+    options.encoding = 'UTF-8'
+    options.compilerArgs += ["-proc:none"]
+}
+
+compileGentestJava {
+    options.encoding = 'UTF-8'
+    options.compilerArgs += ["-proc:none"]
 }
 
 jar {
@@ -58,49 +70,53 @@ task deleteGeneratedFiles(type: Delete) {
     delete testTmpDir()
 }
 
-task gen(dependsOn: [classes, deleteGeneratedFiles]) << {
-    ant.taskdef(
-        resource: 'domagentask.properties', 
-        classpath: (configurations.antRuntime + sourceSets.main.output).asPath) {
-    }
-    ant.echo(file: "${resourcesDestDir}/template/lib.ftl", message: """\
-        |<#assign copyright>
-        |/*
-        | * Copyright 2008-2009 ...
-        | * All rights reserved.
-        | */
-        |</#assign>
-        |
-        |<#assign author="Nakamura">""".stripMargin())
-    ant.gen(
-        url: jdbcUrl, 
-        user: jdbcUser,
-        password: jdbcPassword,
-        globalFactoryClassName: globalFactoryClassName,
-        templatePrimaryDir: "${resourcesDestDir}/template") {
-
-        entityConfig(destDir: javaDestDir)
-        daoConfig(destDir: javaDestDir)
-        sqlConfig(destDir: resourcesDestDir)
-    }
-}
-
-task genEntity(dependsOn: [classes, deleteGeneratedFiles]) << {
-    ant.taskdef(
-        resource: 'domagentask.properties', 
-        classpath: (configurations.antRuntime + sourceSets.main.output).asPath) {
-    }
-    if (runsOn('hsqldb')) {
+task gen(dependsOn: [classes, deleteGeneratedFiles]) {
+    doLast {
+        ant.taskdef(
+            resource: 'domagentask.properties', 
+            classpath: (configurations.antRuntime + sourceSets.main.output).asPath) {
+        }
+        ant.echo(file: "${resourcesDestDir}/template/lib.ftl", message: """\
+            |<#assign copyright>
+            |/*
+            | * Copyright 2008-2009 ...
+            | * All rights reserved.
+            | */
+            |</#assign>
+            |
+            |<#assign author="Nakamura">""".stripMargin())
         ant.gen(
             url: jdbcUrl, 
             user: jdbcUser,
             password: jdbcPassword,
-            globalFactoryClassName: globalFactoryClassName) {
+            globalFactoryClassName: globalFactoryClassName,
+            templatePrimaryDir: "${resourcesDestDir}/template") {
+    
+            entityConfig(destDir: javaDestDir)
+            daoConfig(destDir: javaDestDir)
+            sqlConfig(destDir: resourcesDestDir)
+        }
+    }
+}
 
-            entityConfig(
-                sql: 'select * from Employee',
-                destDir: javaDestDir,
-                entityName: 'MyEmployee')
+task genEntity(dependsOn: [classes, deleteGeneratedFiles]) {
+    doLast {
+        ant.taskdef(
+            resource: 'domagentask.properties', 
+            classpath: (configurations.antRuntime + sourceSets.main.output).asPath) {
+        }
+        if (runsOn('hsqldb')) {
+            ant.gen(
+                url: jdbcUrl, 
+                user: jdbcUser,
+                password: jdbcPassword,
+                globalFactoryClassName: globalFactoryClassName) {
+    
+                entityConfig(
+                    sql: 'select * from Employee',
+                    destDir: javaDestDir,
+                    entityName: 'MyEmployee')
+            }
         }
     }
 }
@@ -112,41 +128,45 @@ task copyMySQLTest(type: Copy) {
     into testTmpDir()
 }
 
-task genTestSuite(dependsOn: [compileGenmainJava]) << {
-    ant.taskdef(
-        resource: 'domagentask.properties', 
-        classpath: (configurations.antRuntime + sourceSets.main.output).asPath) {
-    }
-    ant.gen(
-        url: jdbcUrl, 
-        user: jdbcUser,
-        password: jdbcPassword,
-        globalFactoryClassName: globalFactoryClassName,
-        templatePrimaryDir: "${resourcesDestDir}/template") {
-
-        sqlTestCaseConfig(destDir: testDestDir) {
-            fileset(dir: resourcesDestDir) {
-                include(name: 'META-INF/**/*.sql')
+task genTestSuite(dependsOn: [compileGenmainJava]) {
+    doLast {
+        ant.taskdef(
+            resource: 'domagentask.properties', 
+            classpath: (configurations.antRuntime + sourceSets.main.output).asPath) {
+        }
+        ant.gen(
+            url: jdbcUrl, 
+            user: jdbcUser,
+            password: jdbcPassword,
+            globalFactoryClassName: globalFactoryClassName,
+            templatePrimaryDir: "${resourcesDestDir}/template") {
+    
+            sqlTestCaseConfig(destDir: testDestDir) {
+                fileset(dir: resourcesDestDir) {
+                    include(name: 'META-INF/**/*.sql')
+                }
             }
         }
-    }
-    if (runsOn('mysql')) {
-        tasks.copyMySQLTest.execute()
+        if (runsOn('mysql')) {
+            tasks.copyMySQLTest.execute()
+        }
     }
 }
 
 compileGentestJava.dependsOn genTestSuite
 
-check << {
-    if (runsOn('hsqldb')) {
-        assert file("${javaDestDir}/example/entity/MyEmployee.java").exists()
-        assert file("${javaDestDir}/example/entity/Employee.java").exists()
-        assert file("${testDestDir}/example/dao/EmployeeDaoTest.java").exists()
-    }
-    if (runsOn('mysql')) {
-        assert file("${javaDestDir}/example/entity/Table0.java").exists()
-        assert file("${javaDestDir}/example/dao/Table0Dao.java").exists()
-        assert file("${testDestDir}/example/dao/Table0DaoTest.java").exists()
+check {
+    doLast {
+        if (runsOn('hsqldb')) {
+            assert file("${javaDestDir}/example/entity/MyEmployee.java").exists()
+            assert file("${javaDestDir}/example/entity/Employee.java").exists()
+            assert file("${testDestDir}/example/dao/EmployeeDaoTest.java").exists()
+        }
+        if (runsOn('mysql')) {
+            assert file("${javaDestDir}/example/entity/Table0.java").exists()
+            assert file("${javaDestDir}/example/dao/Table0Dao.java").exists()
+            assert file("${testDestDir}/example/dao/Table0DaoTest.java").exists()
+        }
     }
 }
 
@@ -163,6 +183,7 @@ repositories {
 }
  
 dependencies {
+    compile "org.seasar.doma:doma:${dependentVersion}"
     compile "org.seasar.doma:doma-gen:${dependentVersion}"
     testCompile 'junit:junit:4.11'
     testCompile 'org.hsqldb:hsqldb:2.3.2'
