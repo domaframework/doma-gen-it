@@ -152,10 +152,6 @@ check << {
 
 check.dependsOn(compileGentestJava)
 
-wrapper {
-    gradleVersion = '4.11-20180809235910+0000'
-}
-
 configurations {
     antRuntime
 }
