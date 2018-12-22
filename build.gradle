@@ -35,7 +35,6 @@ compileTestJava {
 
 compileGenmainJava {
     options.encoding = 'UTF-8'
-    options.compilerArgs += ["-proc:none"]
 }
 
 compileGentestJava {
@@ -193,6 +192,7 @@ dependencies {
     antRuntime 'org.hsqldb:hsqldb:2.3.2'
     antRuntime 'mysql:mysql-connector-java:5.1.38'
 
+    genmainAnnotationProcessor "org.seasar.doma:doma:${dependentVersion}"
     genmainCompile "org.seasar.doma:doma:${dependentVersion}"
     gentestCompile "org.seasar.doma:doma:${dependentVersion}"
     gentestCompile 'junit:junit:4.11'
