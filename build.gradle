@@ -174,20 +174,20 @@ repositories {
 }
  
 dependencies {
-    compile "org.seasar.doma:doma:${dependentVersion}"
-    compile "org.seasar.doma:doma-gen:${dependentVersion}"
-    testCompile 'junit:junit:4.11'
-    testCompile 'org.hsqldb:hsqldb:2.3.2'
-    testCompile 'mysql:mysql-connector-java:5.1.38'
+    implementation "org.seasar.doma:doma:${dependentVersion}"
+    implementation "org.seasar.doma:doma-gen:${dependentVersion}"
+    testImplementation 'junit:junit:4.11'
+    testRuntimeOnly 'org.hsqldb:hsqldb:2.3.2'
+    testRuntimeOnly 'mysql:mysql-connector-java:5.1.38'
 
     antRuntime "org.seasar.doma:doma-gen:${dependentVersion}"
     antRuntime 'org.hsqldb:hsqldb:2.3.2'
     antRuntime 'mysql:mysql-connector-java:5.1.38'
 
     genmainAnnotationProcessor "org.seasar.doma:doma:${dependentVersion}"
-    genmainCompile "org.seasar.doma:doma:${dependentVersion}"
-    gentestCompile "org.seasar.doma:doma:${dependentVersion}"
-    gentestCompile 'junit:junit:4.11'
+    genmainImplementation "org.seasar.doma:doma:${dependentVersion}"
+    gentestImplementation "org.seasar.doma:doma:${dependentVersion}"
+    gentestImplementation 'junit:junit:4.11'
 }
 
 apply from:'eclipse.gradle'
