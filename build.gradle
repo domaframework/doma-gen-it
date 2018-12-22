@@ -122,11 +122,6 @@ task genEntity(dependsOn: [classes, deleteGeneratedFiles]) {
 
 compileGenmainJava.dependsOn(gen, genEntity)
 
-task copyMySQLTest(type: Copy) {
-    from 'src/testmysql/java/tmp'
-    into testTmpDir()
-}
-
 task genTestSuite(dependsOn: [compileGenmainJava]) {
     doLast {
         ant.taskdef(
@@ -145,9 +140,6 @@ task genTestSuite(dependsOn: [compileGenmainJava]) {
                     include(name: 'META-INF/**/*.sql')
                 }
             }
-        }
-        if (runsOn('mysql')) {
-            tasks.copyMySQLTest.execute()
         }
     }
 }
