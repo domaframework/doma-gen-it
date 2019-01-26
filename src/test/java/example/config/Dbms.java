@@ -15,25 +15,21 @@
  */
 package example.config;
 
-/**
- * @author nakamura-to
- *
- */
+/** @author nakamura-to */
 public enum Dbms {
+  H2,
 
-    H2,
+  HSQLDB,
 
-    HSQLDB,
+  SQLITE,
 
-    SQLITE,
+  MYSQL,
 
-    MYSQL,
+  POSTGRESQL,
 
-    POSTGRESQL,
+  SQLSERVER,
 
-    SQLSERVER,
+  ORACLE,
 
-    ORACLE,
-
-    DB2
+  DB2
 }

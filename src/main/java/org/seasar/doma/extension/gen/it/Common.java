@@ -18,13 +18,9 @@ package org.seasar.doma.extension.gen.it;
 import org.seasar.doma.Entity;
 import org.seasar.doma.Version;
 
-/**
- * @author taedium
- * 
- */
+/** @author taedium */
 @Entity
 public abstract class Common {
 
-    @Version
-    Integer version;
+  @Version Integer version;
 }
