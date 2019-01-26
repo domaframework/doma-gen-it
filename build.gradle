@@ -5,6 +5,7 @@ plugins {
 spotless {
     java {
         googleJavaFormat('1.6')
+        target 'src/main/**/*.java', 'src/test/**/*.java'
     }
 }
 
