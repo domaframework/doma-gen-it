@@ -13,3 +13,4 @@ src/gentest
 src/genmainmysql
 src/gentestmysql
 src/test/java/tmp
+.idea

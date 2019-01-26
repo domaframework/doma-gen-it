@@ -81,6 +81,7 @@ task deleteGeneratedFiles(type: Delete) {
 }
 
 task gen(dependsOn: [classes, deleteGeneratedFiles]) {
+    group = 'doma-gen'
     doLast {
         ant.taskdef(
             resource: 'domagentask.properties', 
@@ -110,6 +111,7 @@ task gen(dependsOn: [classes, deleteGeneratedFiles]) {
 }
 
 task genEntity(dependsOn: [classes, deleteGeneratedFiles]) {
+    group = 'doma-gen'
     doLast {
         ant.taskdef(
             resource: 'domagentask.properties', 
@@ -134,6 +136,7 @@ task genEntity(dependsOn: [classes, deleteGeneratedFiles]) {
 compileGenmainJava.dependsOn(gen, genEntity)
 
 task genTestSuite(dependsOn: [compileGenmainJava]) {
+    group = 'doma-gen'
     doLast {
         ant.taskdef(
             resource: 'domagentask.properties', 
