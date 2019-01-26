@@ -1,8 +1,18 @@
+plugins {
+    id 'com.diffplug.gradle.spotless' version '3.16.0'
+}
+
+spotless {
+    java {
+        googleJavaFormat('1.6')
+    }
+}
+
 apply plugin: 'java'
 apply plugin: 'groovy'
 
 version = '2.23.0-SNAPSHOT'
-ext.dependentVersion = '2.22.0'
+ext.dependentVersion = '2.23.0-SNAPSHOT'
 
 sourceSets {
     genmain
