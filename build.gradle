@@ -12,8 +12,8 @@ spotless {
 apply plugin: 'java'
 apply plugin: 'groovy'
 
-version = '2.25.1-SNAPSHOT'
-ext.dependentVersion = '2.25.0'
+version = '2.25.1'
+ext.dependentVersion = '2.25.1'
 
 sourceSets {
     genmain
