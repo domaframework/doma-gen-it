@@ -1,22 +1,23 @@
 plugins {
-    id 'com.diffplug.gradle.spotless' version '3.16.0'
+    id 'com.diffplug.gradle.spotless' version '3.27.2'
+    id 'java'
 }
 
 spotless {
     java {
-        googleJavaFormat('1.6')
+        googleJavaFormat('1.7')
         target 'src/main/**/*.java', 'src/test/**/*.java'
     }
 }
 
-apply plugin: 'java'
-apply plugin: 'groovy'
-
 version = '2.28.1-SNAPSHOT'
 ext.dependentVersion = '2.28.0'
+ext.domaResources = ['doma.compile.config', 'META-INF/**/*.sql', 'META-INF/**/*.script']
 
 sourceSets {
-    genmain
+    genmain {
+        output.dir("META-INF", builtBy: 'gen')
+    }
     gentest
 
     // add classpath for test
@@ -27,12 +28,6 @@ sourceSets {
         runtimeClasspath += sourceSets.gentest.output
     }
 }
-
-processResources.destinationDir = compileJava.destinationDir
-compileJava.dependsOn processResources
-
-processGenmainResources.destinationDir = compileGenmainJava.destinationDir
-compileGenmainJava.dependsOn processGenmainResources
 
 compileJava {
     options.encoding = 'UTF-8'
@@ -55,7 +50,7 @@ compileGentestJava {
 
 jar {
     manifest {
-        attributes 'Implementation-Title': 'Doma-Gen-IT', 'Implementation-Version': version
+        attributes 'Implementation-Title': 'Doma-Gen-IT', 'Implementation-Version': archiveVersion
     }
 }
 
@@ -133,7 +128,14 @@ task genEntity(dependsOn: [classes, deleteGeneratedFiles]) {
     }
 }
 
-compileGenmainJava.dependsOn(gen, genEntity)
+task myCopy(type: Copy, dependsOn: [gen, genEntity]) {
+    outputs.dir compileGenmainJava.destinationDir
+    from resourcesDestDir
+    into compileGenmainJava.destinationDir
+    include domaResources
+}
+
+compileGenmainJava.dependsOn(myCopy)
 
 task genTestSuite(dependsOn: [compileGenmainJava]) {
     group = 'doma-gen'
